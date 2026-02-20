@@ -7,10 +7,7 @@ MODEL_NAME = "llama3.1:8b"
 
 
 def call_model(messages: list, functions: Optional[list] = None) -> Dict[str, Any]:
-    """
-    Calls Ollama chat API.
-    If functions are provided, we include them in system prompt (manual tool calling).
-    """
+    
 
     if functions:
         tool_text = json.dumps(functions, indent=2)
@@ -72,3 +69,4 @@ def extract_function_call(response: Dict[str, Any]):
         return {"name": tool, "arguments": parsed.get("arguments", {})}
 
     return None
+
