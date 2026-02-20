@@ -3,7 +3,7 @@
 ## What this project does
 - Exposes a single `/chat` endpoint.
 - The LLM (OpenAI model) can ask to call one of three allowed functions:
-  - `get_weather_for_date(city, date)` — weather for a date (YYYY-MM-DD).
+  - `get_weather_for_date(city, date)` — weather for a date.
   - `get_news_for_city(city, page_size)` — recent news mentioning the city.
   - `convert_currency(amount, base, target)` — convert currencies.
 - The backend executes the function locally (so secrets stay safe), logs the call to SQLite, then asks the model for a final natural-language reply.
