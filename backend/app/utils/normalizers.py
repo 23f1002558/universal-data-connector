@@ -4,10 +4,7 @@ from datetime import datetime, timedelta
 from typing import Optional
 import re
 
-
-# -------------------------
 # DATE NORMALIZER
-# -------------------------
 def normalize_date(date_str: str) -> str:
     """
     Converts user-friendly date inputs into ISO YYYY-MM-DD.
@@ -18,8 +15,6 @@ def normalize_date(date_str: str) -> str:
     - YYYY-MM-DD
     - DD-MM-YYYY
     - DD/MM/YYYY
-    - "19 Feb 2026"
-    - "Feb 19 2026"
     """
 
     if not date_str:
@@ -47,7 +42,6 @@ def normalize_date(date_str: str) -> str:
         dt = datetime(int(yyyy), int(mm), int(dd))
         return dt.date().isoformat()
 
-    # Try common text formats
     formats = [
         "%d %b %Y",   # 19 Feb 2026
         "%d %B %Y",   # 19 February 2026
@@ -65,9 +59,8 @@ def normalize_date(date_str: str) -> str:
     raise ValueError("Invalid date format. Use YYYY-MM-DD or today/tomorrow.")
 
 
-# -------------------------
 # CITY NORMALIZER
-# -------------------------
+
 def normalize_city(city: str) -> str:
     """
     Normalizes city strings.
@@ -83,10 +76,7 @@ def normalize_city(city: str) -> str:
     # Pune -> Pune,IN is optional
     return s.title()
 
-
-# -------------------------
 # CURRENCY NORMALIZER
-# -------------------------
 def normalize_currency(code: str) -> str:
     """
     Normalizes currency codes like:
@@ -96,3 +86,4 @@ def normalize_currency(code: str) -> str:
     if not code:
         raise ValueError("Currency cannot be empty.")
     return code.strip().upper()
+
