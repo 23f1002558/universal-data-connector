@@ -1,13 +1,8 @@
 """
 Real implementations for:
-1) get_weather_for_date(city, date)  -- Uses OpenWeatherMap (current or 5-day forecast)
-2) get_news_for_city(city, page_size) -- Uses NewsAPI.org
-3) convert_currency(amount, base, target) -- Uses exchangerate.host (free)
-
-Notes:
-- OpenWeatherMap free tier supports current weather and 5-day / 3-hour forecast.
-- For forecasts, we map the requested date to the nearest day in the 5-day forecast.
-- For historical weather beyond the forecast window a paid provider or historical endpoints are needed.
+1) get_weather_for_date(city, date)  - Uses OpenWeatherMap (current or 5-day forecast)
+2) get_news_for_city(city, page_size) - Uses NewsAPI.org
+3) convert_currency(amount, base, target) - Uses exchangerate.host (free)
 """
 
 from __future__ import annotations
@@ -24,9 +19,8 @@ import sqlite3
 
 DB_PATH = os.getenv("FUNCTION_LOG_DB", "./function_calls.db")
 
-# ---------------------------
+
 # logging helper (sqlite)
-# ---------------------------
 def init_db():
     conn = sqlite3.connect(DB_PATH)
     cur = conn.cursor()
@@ -52,9 +46,7 @@ def log_call(function_name: str, arguments: Dict[str, Any], result: Dict[str, An
     conn.commit()
     conn.close()
 
-# ---------------------------
 # Utilities
-# ---------------------------
 def _safe_get(d, *keys, default=None):
     for k in keys:
         if d is None:
@@ -62,9 +54,8 @@ def _safe_get(d, *keys, default=None):
         d = d.get(k)
     return d if d is not None else default
 
-# ---------------------------
 # 1) Weather for a particular date
-# ---------------------------
+
 def _geocode_city(city: str) -> Optional[Dict[str, Any]]:
     
     """Return {'lat':..., 'lon':..., 'name':..., 'country':...} or None"""
@@ -136,8 +127,6 @@ def get_weather_for_date(city: str, date: str) -> Dict[str, Any]:
         log_call("get_weather_for_date", {"city": city, "date": date}, result)
         return result
 
-    # For future dates: use 5-day / 3-hour forecast. Note: this covers ~5 days only.
-    # We'll request the forecast and bucket entries by date and summarize.
     url = "https://api.openweathermap.org/data/2.5/forecast"
     params = {"lat": lat, "lon": lon, "appid": api_key, "units": "metric"}
     r = requests.get(url, params=params, timeout=12)
@@ -189,9 +178,9 @@ def get_weather_for_date(city: str, date: str) -> Dict[str, Any]:
     log_call("get_weather_for_date", {"city": city, "date": date}, result)
     return result
 
-# ---------------------------
+
 # 2) News for a particular city
-# ---------------------------
+
 def get_news_for_city(city: str, page_size: int = 5) -> Dict[str, Any]:
     city = normalize_city(city)
 
@@ -202,7 +191,6 @@ def get_news_for_city(city: str, page_size: int = 5) -> Dict[str, Any]:
         log_call("get_news_for_city", {"city": city, "page_size": page_size}, result)
         return result
 
-    # Use NewsAPI 'everything' endpoint and search for the city name.
     url = "https://newsapi.org/v2/everything"
     params = {
         "q": city,
@@ -231,9 +219,9 @@ def get_news_for_city(city: str, page_size: int = 5) -> Dict[str, Any]:
     log_call("get_news_for_city", {"city": city, "page_size": page_size}, result)
     return result
 
-# ---------------------------
+
 # 3) Currency conversion
-# ---------------------------
+
 def convert_currency(amount: float, base: str, target: str) -> Dict[str, Any]:
     base = normalize_currency(base)
     target = normalize_currency(target)
@@ -262,9 +250,9 @@ def convert_currency(amount: float, base: str, target: str) -> Dict[str, Any]:
     }
 
 
-# ---------------------------
+
 # Registry for model
-# ---------------------------
+
 FUNCTION_REGISTRY = {
     "get_weather_for_date": {
         "callable": get_weather_for_date,
@@ -319,15 +307,16 @@ def call_function_by_name(name: str, arguments: dict):
     if name not in FUNCTION_REGISTRY:
         raise ValueError(f"Unknown function: {name}")
     fn = FUNCTION_REGISTRY[name]["callable"]
-    # Basic args sanitization: ensure only expected keys passed
+    # Basic args sanitization
     params_schema = FUNCTION_REGISTRY[name]["parameters"]["properties"]
     cleaned_args = {}
     for k in params_schema.keys():
         if k in arguments:
             cleaned_args[k] = arguments[k]
-    # type conversions where needed
+    # type conversions 
     try:
         return fn(**cleaned_args)
     except TypeError as e:
-        # likely missing or bad args
+        # missing or bad args
         raise
+
